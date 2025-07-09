@@ -74,6 +74,12 @@ mavenPublishing {
                 name = "Konstantin Merenkov"
                 email = "merkostdev@gmail.com"
             }
+
+            developer {
+                id = "diogocavaiar"
+                name = "Diogo Cavaiar"
+                email = "cavaiarconsulting@gmail.com"
+            }
         }
 
         scm {
