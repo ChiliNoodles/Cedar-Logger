@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge"/>
 </p>
 
-A lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering.
+Multiplatform Timber-like lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering.
 
 > **🚀 Familiar API**: If you've used [Timber](https://github.com/JakeWharton/timber) before, you'll feel right at home! Cedar Logger uses the same intuitive API but extends it to support Kotlin Multiplatform, making migration simple and straightforward.
 

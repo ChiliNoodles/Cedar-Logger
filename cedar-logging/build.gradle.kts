@@ -58,7 +58,7 @@ mavenPublishing {
 
     pom {
         name = "Cedar Logger"
-        description = "Kotlin Multiplatform library"
+        description = "Multiplatform Timber-like lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering."
         url = "https://github.com/ChiliNoodles/Cedar-Logger"
 
         licenses {
