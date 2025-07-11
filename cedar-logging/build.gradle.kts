@@ -54,12 +54,10 @@ android {
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
     publishToMavenCentral()
-    coordinates("com.chilinoodles.cedar", "cedar-logging", libs.versions.appVersionName.get())
     coordinates("io.github.chilinoodles", "cedar-logging", libs.versions.appVersionName.get())
 
     pom {
         name = "Cedar Logger"
-        description = "Multiplatform Timber-like lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering."
         description =
             "Multiplatform Timber-like lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering."
         url = "https://github.com/ChiliNoodles/Cedar-Logger"

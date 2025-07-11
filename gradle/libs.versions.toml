@@ -1,6 +1,6 @@
 [versions]
 appVersionCode = "1"
-appVersionName = "0.1.0"
+appVersionName = "0.1.1"
 
 # SDK Versions
 minSdk = "21"
@@ -10,10 +10,10 @@ javaVersion = "21"
 jvmVersion = "JVM_21"
 
 kotlin = "2.2.0"
-agp = "8.10.1"
+agp = "8.11.0"
 maven-publish = "0.33.0"
 kotlinx-coroutines = "1.10.2"
-kotlinx-datetime = "0.7.0"
+kotlinx-datetime = "0.7.1"
 compose = "1.8.2"
 androidx-activityCompose = "1.10.1"
 
