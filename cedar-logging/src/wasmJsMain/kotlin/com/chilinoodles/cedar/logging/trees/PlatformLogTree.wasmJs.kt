@@ -52,7 +52,7 @@ actual class PlatformLogTree actual constructor() : LogTree {
             }
         }
 
-        val header = "[$symbol $tag]"
+        val header = "$symbol [$tag]"
         val errorDump = throwable?.stackTraceToString()
         val fullMessage = buildList {
             add(header)
@@ -61,7 +61,7 @@ actual class PlatformLogTree actual constructor() : LogTree {
         }.toTypedArray()
 
         when (priority) {
-            LogPriority.VERBOSE,
+            LogPriority.VERBOSE -> Console.log(*fullMessage)
             LogPriority.DEBUG -> Console.debug(*fullMessage)
             LogPriority.INFO -> Console.info(*fullMessage)
             LogPriority.WARNING -> Console.warn(*fullMessage)

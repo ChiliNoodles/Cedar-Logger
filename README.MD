@@ -31,8 +31,31 @@ Multiplatform Timber-like lightweight and extensible logging library for Kotlin 
 ### Installation
 ```kotlin
 dependencies {
-    implementation("com.chilinoodles:cedar-logging:1.0.0")
+    implementation("io.github.chilinoodles:cedar-logging:0.2.0")
 }
+```
+
+### iOS Integration Options
+
+#### Option 1: Direct Framework Export (Recommended)
+```kotlin
+// In your iOS app's build.gradle.kts
+listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { target ->
+    target.binaries.framework {
+        export("io.github.chilinoodles:cedar-logging:0.2.0")
+        baseName = "YourApp"
+        isStatic = true
+    }
+}
+
+// In commonMain dependencies
+api("io.github.chilinoodles:cedar-logging:0.2.0")
+```
+
+#### Option 2: CocoaPods Integration
+```ruby
+# In your Podfile
+pod 'CedarLogger', :git => 'https://github.com/ChiliNoodles/Cedar-Logger.git', :tag => 'v0.2.0'
 ```
 
 ### Basic Usage
@@ -90,6 +113,8 @@ Cedar.plant(PlatformLogTree().configureForPlatform {
 - **Android**: Configurable max log length
 - **JVM**: Custom logger names for java.util.logging integration
 - **All platforms**: Configurable emoji support
+
+> **📱 iOS/Swift Usage**: Cedar Logger can be used directly in Swift code via framework export. See [iOS/Swift Usage Guide](docs/ios-swift-usage.md) for detailed examples.
 
 ## 🔧 Creating Custom Trees
 
@@ -224,6 +249,33 @@ try {
 | `Cedar.uproot(tree)` | Remove specific tree |
 | `Cedar.treeCount` | Get planted tree count |
 
+## 📦 Maven Central Publishing
+
+Cedar Logger is published to Maven Central and ready for production use:
+
+### Dependency Information
+```kotlin
+// Kotlin Multiplatform
+implementation("io.github.chilinoodles:cedar-logging:0.2.0")
+
+// Android only
+implementation("io.github.chilinoodles:cedar-logging-android:0.2.0")
+
+// JVM only  
+implementation("io.github.chilinoodles:cedar-logging-jvm:0.2.0")
+```
+
+### Platform Support
+- ✅ **Android**: AAR with ProGuard rules
+- ✅ **iOS**: Static framework + CocoaPods
+- ✅ **JVM**: JAR for desktop/server
+- ✅ **wasmJs**: WebAssembly for browsers
+
+### iOS Framework
+- **Name**: `CedarLogger`
+- **Min iOS**: 12.0
+- **Type**: Static framework
+- **Architectures**: arm64, x64, simulator
 
 ## 📝 License
 

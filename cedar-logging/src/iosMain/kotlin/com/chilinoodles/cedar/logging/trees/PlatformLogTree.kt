@@ -72,7 +72,7 @@ actual class PlatformLogTree : LogTree {
             }
         }
 
-        val header = "[$symbol $tag]"
+        val header = "$symbol [$tag]"
         val body = message
         val errorDump = throwable?.stackTraceToString()
         val allText = buildList {
