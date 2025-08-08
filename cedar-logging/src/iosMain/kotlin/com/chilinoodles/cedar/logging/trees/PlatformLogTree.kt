@@ -8,6 +8,7 @@ import kotlinx.cinterop.autoreleasepool
 import kotlinx.cinterop.ptr
 import platform.darwin.OS_LOG_DEFAULT
 import platform.darwin.OS_LOG_TYPE_DEBUG
+import platform.darwin.OS_LOG_TYPE_DEFAULT
 import platform.darwin.OS_LOG_TYPE_ERROR
 import platform.darwin.OS_LOG_TYPE_FAULT
 import platform.darwin.OS_LOG_TYPE_INFO
@@ -20,6 +21,7 @@ import platform.darwin._os_log_internal
  */
 @OptIn(ExperimentalForeignApi::class)
 actual class PlatformLogTree : LogTree {
+
     actual override fun isLoggable(tag: String?, priority: LogPriority) = true
 
     @OptIn(BetaInteropApi::class)
@@ -60,7 +62,7 @@ actual class PlatformLogTree : LogTree {
     }
 
     private fun mapToOsLogType(priority: LogPriority): UByte = when (priority) {
-        LogPriority.VERBOSE -> OS_LOG_TYPE_DEBUG
+        LogPriority.VERBOSE -> OS_LOG_TYPE_DEFAULT
         LogPriority.DEBUG -> OS_LOG_TYPE_DEBUG
         LogPriority.INFO -> OS_LOG_TYPE_INFO
         LogPriority.WARNING -> OS_LOG_TYPE_ERROR
