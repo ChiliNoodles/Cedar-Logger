@@ -317,7 +317,7 @@ fun LogDisplayPanel(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    items(logMessages.takeLast(100).reversed()) { log ->
+                    items(logMessages.takeLast(MAX_LOG_MESSAGES_DISPLAYED).reversed()) { log ->
                         LogCard(log)
                     }
                 }
