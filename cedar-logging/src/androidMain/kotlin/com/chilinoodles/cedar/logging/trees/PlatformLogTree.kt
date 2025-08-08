@@ -6,10 +6,20 @@ import com.chilinoodles.cedar.logging.LogTree
 
 actual class PlatformLogTree : LogTree {
 
-    private val MAX_LOG_LENGTH = 4_000
+    private var maxLogLength = 4_000
+    private var enableEmojis: Boolean = true
+
+    actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
+        val configuration = PlatformLogConfig().apply(config)
+        
+        configuration.androidMaxLogLength?.let { maxLogLength = it }
+        enableEmojis = configuration.enableEmojis
+        
+        return this
+    }
 
     private fun String.logChunks(prio: Int, tag: String) =
-        chunked(MAX_LOG_LENGTH).forEach { Log.println(prio, tag, it) }
+        chunked(maxLogLength).forEach { Log.println(prio, tag, it) }
 
     private fun LogPriority.toAndroid(): Int = when (this) {
         LogPriority.VERBOSE -> Log.VERBOSE
@@ -28,10 +38,29 @@ actual class PlatformLogTree : LogTree {
         throwable: Throwable?
     ) {
         val prio = priority.toAndroid()
-        val safeTag = tag.take(23)
+        val actualTag = tag
+        val safeTag = actualTag.take(23)
+
+        val symbol = if (enableEmojis) {
+            when (priority) {
+                LogPriority.VERBOSE -> "🔍"
+                LogPriority.DEBUG -> "🐞"
+                LogPriority.INFO -> "ℹ️"
+                LogPriority.WARNING -> "⚠️"
+                LogPriority.ERROR -> "❌"
+            }
+        } else {
+            when (priority) {
+                LogPriority.VERBOSE -> "V"
+                LogPriority.DEBUG -> "D"
+                LogPriority.INFO -> "I"
+                LogPriority.WARNING -> "W"
+                LogPriority.ERROR -> "E"
+            }
+        }
 
         val full = buildString {
-            append(message)
+            append("$symbol $message")
             throwable?.let {
                 appendLine()
                 append(Log.getStackTraceString(it))
