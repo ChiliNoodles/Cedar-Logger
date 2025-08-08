@@ -17,8 +17,9 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            export(project(":cedar-logging"))
             baseName = "ComposeApp"
             isStatic = true
         }
@@ -51,7 +52,7 @@ kotlin {
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
-            implementation(project(":cedar-logging"))
+            api(project(":cedar-logging"))
         }
 
         androidMain.dependencies {

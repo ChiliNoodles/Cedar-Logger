@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.multiplatform)
     alias(libs.plugins.android.library)
     alias(libs.plugins.maven.publish)
+    alias(libs.plugins.kotlinNativeCocoaPods)
 }
 
 kotlin {
@@ -20,6 +21,15 @@ kotlin {
             baseName = "CedarLogger"
             isStatic = true
         }
+    }
+
+    cocoapods {
+        ios.deploymentTarget = "12.0"
+        framework {
+            baseName = "CedarLogger"
+            isStatic = true
+        }
+        noPodspec()
     }
 
     jvm()
