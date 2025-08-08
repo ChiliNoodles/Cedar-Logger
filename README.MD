@@ -66,11 +66,30 @@ Cedar.plant(ConsoleTree().withMinPriority(LogPriority.DEBUG))
 ```
 Output: `🐛 DEBUG   [Network] API call completed successfully`
 
-### PlatformDebugTree
-Platform-specific optimized logging (expect/actual implementation).
+### PlatformLogTree
+Uses platform-specific logging APIs for optimal performance. Supports platform-specific configuration for advanced features.
+
+#### Basic Usage
 ```kotlin
-Cedar.plant(PlatformDebugTree())
+Cedar.plant(PlatformLogTree())
 ```
+
+#### Advanced Configuration
+```kotlin
+Cedar.plant(PlatformLogTree().configureForPlatform {
+    iosSubsystem = "com.myapp.network"
+    iosCategory = "API"
+    androidMaxLogLength = 2000
+    jvmLoggerName = "MyApp.Logger"
+    enableEmojis = true
+})
+```
+
+**Platform-Specific Features:**
+- **iOS**: Custom subsystems and categories for better organization in Console.app
+- **Android**: Configurable max log length
+- **JVM**: Custom logger names for java.util.logging integration
+- **All platforms**: Configurable emoji support
 
 ## 🔧 Creating Custom Trees
 

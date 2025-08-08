@@ -6,7 +6,19 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 actual class PlatformLogTree actual constructor() : LogTree {
-    private val logger: Logger = Logger.getLogger(PlatformLogTree::class.java.name)
+    private var logger: Logger = Logger.getLogger(PlatformLogTree::class.java.name)
+    private var enableEmojis: Boolean = true
+
+    actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
+        val configuration = PlatformLogConfig().apply(config)
+        
+        configuration.jvmLoggerName?.let {
+            logger = Logger.getLogger(it)
+        }
+        enableEmojis = configuration.enableEmojis
+        
+        return this
+    }
 
     actual override fun isLoggable(tag: String?, priority: LogPriority): Boolean {
         val level = when (priority) {
@@ -24,7 +36,25 @@ actual class PlatformLogTree actual constructor() : LogTree {
         message: String,
         throwable: Throwable?
     ) {
-        val header = "[$tag]"
+        val symbol = if (enableEmojis) {
+            when (priority) {
+                LogPriority.VERBOSE -> "🔍"
+                LogPriority.DEBUG -> "🐞"
+                LogPriority.INFO -> "ℹ️"
+                LogPriority.WARNING -> "⚠️"
+                LogPriority.ERROR -> "❌"
+            }
+        } else {
+            when (priority) {
+                LogPriority.VERBOSE -> "V"
+                LogPriority.DEBUG -> "D"
+                LogPriority.INFO -> "I"
+                LogPriority.WARNING -> "W"
+                LogPriority.ERROR -> "E"
+            }
+        }
+
+        val header = "[$symbol $tag]"
         val fullMessage = buildString {
             append(header).append(" ").append(message)
             throwable?.let {

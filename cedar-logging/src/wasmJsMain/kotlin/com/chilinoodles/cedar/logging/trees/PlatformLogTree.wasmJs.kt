@@ -15,6 +15,17 @@ external object Console {
 
 /** Wasm-JS implementation of the logging tree */
 actual class PlatformLogTree actual constructor() : LogTree {
+    private var enableEmojis: Boolean = true
+
+    actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
+        val configuration = PlatformLogConfig().apply(config)
+        
+        // Apply common configuration (WASM-JS only supports common options)
+        enableEmojis = configuration.enableEmojis
+        
+        return this
+    }
+
     actual override fun isLoggable(tag: String?, priority: LogPriority) = true
 
     actual override fun log(
@@ -23,12 +34,22 @@ actual class PlatformLogTree actual constructor() : LogTree {
         message: String,
         throwable: Throwable?
     ) {
-        val symbol = when (priority) {
-            LogPriority.VERBOSE -> "🔍"
-            LogPriority.DEBUG -> "🐞"
-            LogPriority.INFO -> "ℹ️"
-            LogPriority.WARNING -> "⚠️"
-            LogPriority.ERROR -> "❌"
+        val symbol = if (enableEmojis) {
+            when (priority) {
+                LogPriority.VERBOSE -> "🔍"
+                LogPriority.DEBUG -> "🐞"
+                LogPriority.INFO -> "ℹ️"
+                LogPriority.WARNING -> "⚠️"
+                LogPriority.ERROR -> "❌"
+            }
+        } else {
+            when (priority) {
+                LogPriority.VERBOSE -> "V"
+                LogPriority.DEBUG -> "D"
+                LogPriority.INFO -> "I"
+                LogPriority.WARNING -> "W"
+                LogPriority.ERROR -> "E"
+            }
         }
 
         val header = "[$symbol $tag]"

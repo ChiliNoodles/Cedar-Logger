@@ -14,15 +14,37 @@ import platform.darwin.OS_LOG_TYPE_FAULT
 import platform.darwin.OS_LOG_TYPE_INFO
 import platform.darwin.__dso_handle
 import platform.darwin._os_log_internal
+import platform.darwin.os_log_create
+import platform.darwin.os_log_t
+
+
 
 /**
  * iOS-specific debug tree implementation.
- * Uses Apple's NSLog for better integration with Xcode console.
+ * Uses Apple's os_log for better integration with Xcode console and Console.app.
+ * Supports custom subsystems and categories for organized logging.
  */
 @OptIn(ExperimentalForeignApi::class)
 actual class PlatformLogTree : LogTree {
+    
+    private var customLogObject: os_log_t? = null
+    private var config: PlatformLogConfig? = null
 
     actual override fun isLoggable(tag: String?, priority: LogPriority) = true
+
+    actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
+        val configuration = PlatformLogConfig().apply(config)
+        this.config = configuration
+        
+        if (configuration.iosSubsystem != null) {
+            customLogObject = os_log_create(
+                configuration.iosSubsystem,
+                configuration.iosCategory ?: "General"
+            )
+        }
+        
+        return this
+    }
 
     @OptIn(BetaInteropApi::class)
     actual override fun log(
@@ -31,12 +53,23 @@ actual class PlatformLogTree : LogTree {
         message: String,
         throwable: Throwable?
     ) {
-        val symbol = when (priority) {
-            LogPriority.VERBOSE -> "🔍"
-            LogPriority.DEBUG -> "🐞"
-            LogPriority.INFO -> "ℹ️"
-            LogPriority.WARNING -> "⚠️"
-            LogPriority.ERROR -> "❌"
+        val useEmojis = config?.enableEmojis ?: true
+        val symbol = if (useEmojis) {
+            when (priority) {
+                LogPriority.VERBOSE -> "🔍"
+                LogPriority.DEBUG -> "🐞"
+                LogPriority.INFO -> "ℹ️"
+                LogPriority.WARNING -> "⚠️"
+                LogPriority.ERROR -> "❌"
+            }
+        } else {
+            when (priority) {
+                LogPriority.VERBOSE -> "V"
+                LogPriority.DEBUG -> "D"
+                LogPriority.INFO -> "I"
+                LogPriority.WARNING -> "W"
+                LogPriority.ERROR -> "E"
+            }
         }
 
         val header = "[$symbol $tag]"
@@ -48,11 +81,13 @@ actual class PlatformLogTree : LogTree {
             if (errorDump != null) add(errorDump)
         }.joinToString(" ")
 
+        val logObject = customLogObject ?: OS_LOG_DEFAULT
+
         autoreleasepool {
             allText.chunked(1000).forEach { chunk ->
                 _os_log_internal(
                     __dso_handle.ptr,
-                    OS_LOG_DEFAULT,
+                    logObject,
                     mapToOsLogType(priority),
                     "%s",
                     chunk
