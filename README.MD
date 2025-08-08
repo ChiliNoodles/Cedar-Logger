@@ -2,8 +2,15 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Kotlin-Multiplatform-blue?style=for-the-badge&logo=kotlin"/>
-  <img src="https://img.shields.io/badge/Platform-Android%20|%20iOS-green?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Platform-Android%20|%20iOS%20|%20JVM%20|%20wasmJs-green?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge"/>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Android-3DDC84?style=flat-square&logo=android&logoColor=white"/>
+  <img src="https://img.shields.io/badge/iOS-000000?style=flat-square&logo=ios&logoColor=white"/>
+  <img src="https://img.shields.io/badge/JVM-ED8B00?style=flat-square&logo=openjdk&logoColor=white"/>
+  <img src="https://img.shields.io/badge/wasmJs-654FF0?style=flat-square&logo=webassembly&logoColor=white"/>
 </p>
 
 Multiplatform Timber-like lightweight and extensible logging library for Kotlin Multiplatform projects. Plant different trees to log to various destinations with beautiful formatting and powerful filtering.
@@ -17,7 +24,7 @@ Multiplatform Timber-like lightweight and extensible logging library for Kotlin 
 - **Scoped Logging**: Automatic timing for operations
 - **Tree Architecture**: Extensible output destinations
 - **Thread-Safe**: Concurrent logging support
-- **Multiplatform**: Android, iOS, and more
+- **Multiplatform**: Android, iOS, JVM, and wasmJs support
 
 ## 🚀 Quick Start
 
@@ -59,11 +66,30 @@ Cedar.plant(ConsoleTree().withMinPriority(LogPriority.DEBUG))
 ```
 Output: `🐛 DEBUG   [Network] API call completed successfully`
 
-### PlatformDebugTree
-Platform-specific optimized logging (expect/actual implementation).
+### PlatformLogTree
+Uses platform-specific logging APIs for optimal performance. Supports platform-specific configuration for advanced features.
+
+#### Basic Usage
 ```kotlin
-Cedar.plant(PlatformDebugTree())
+Cedar.plant(PlatformLogTree())
 ```
+
+#### Advanced Configuration
+```kotlin
+Cedar.plant(PlatformLogTree().configureForPlatform {
+    iosSubsystem = "com.myapp.network"
+    iosCategory = "API"
+    androidMaxLogLength = 2000
+    jvmLoggerName = "MyApp.Logger"
+    enableEmojis = true
+})
+```
+
+**Platform-Specific Features:**
+- **iOS**: Custom subsystems and categories for better organization in Console.app
+- **Android**: Configurable max log length
+- **JVM**: Custom logger names for java.util.logging integration
+- **All platforms**: Configurable emoji support
 
 ## 🔧 Creating Custom Trees
 

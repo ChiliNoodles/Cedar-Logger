@@ -1,7 +1,7 @@
 package com.chilinoodles.cedar.logging
 
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -35,7 +35,7 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testCompleteLoggingWorkflow() {
+    fun testCompleteLoggingWorkflow() = runTest {
         Cedar.plant(debugTree, productionTree, errorOnlyTree)
 
         val logger = Cedar.tag("WorkflowTest")
@@ -46,11 +46,11 @@ class CedarIntegrationTest {
         logger.w("Warning message")
         logger.e("Error message")
 
-        assertEquals(5, debugTree.logEntries.size)
-        assertEquals(3, productionTree.logEntries.size)
-        assertEquals(1, errorOnlyTree.logEntries.size)
+        assertEquals(5, debugTree.logEntries().size)
+        assertEquals(3, productionTree.logEntries().size)
+        assertEquals(1, errorOnlyTree.logEntries().size)
 
-        val debugPriorities = debugTree.logEntries.map { it.priority }
+        val debugPriorities = debugTree.logEntries().map { it.priority }
         assertEquals(
             listOf(
                 LogPriority.VERBOSE,
@@ -62,13 +62,13 @@ class CedarIntegrationTest {
             debugPriorities
         )
 
-        val productionPriorities = productionTree.logEntries.map { it.priority }
+        val productionPriorities = productionTree.logEntries().map { it.priority }
         assertEquals(
             listOf(LogPriority.INFO, LogPriority.WARNING, LogPriority.ERROR),
             productionPriorities
         )
 
-        val errorPriorities = errorOnlyTree.logEntries.map { it.priority }
+        val errorPriorities = errorOnlyTree.logEntries().map { it.priority }
         assertEquals(
             listOf(LogPriority.ERROR),
             errorPriorities
@@ -76,34 +76,34 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testDynamicTreeManagement() {
+    fun testDynamicTreeManagement() = runTest {
         Cedar.plant(debugTree)
 
         Cedar.d("Message 1")
-        assertEquals(1, debugTree.logEntries.size)
+        assertEquals(1, debugTree.logEntries().size)
 
         Cedar.plant(productionTree)
 
         Cedar.i("Message 2")
-        assertEquals(2, debugTree.logEntries.size)
-        assertEquals(1, productionTree.logEntries.size)
+        assertEquals(2, debugTree.logEntries().size)
+        assertEquals(1, productionTree.logEntries().size)
 
         Cedar.uproot(debugTree)
 
         Cedar.w("Message 3")
-        assertEquals(0, debugTree.logEntries.size)
-        assertEquals(2, productionTree.logEntries.size)
+        assertEquals(0, debugTree.logEntries().size)
+        assertEquals(2, productionTree.logEntries().size)
 
         Cedar.plant(errorOnlyTree)
 
         Cedar.e("Message 4")
-        assertEquals(0, debugTree.logEntries.size)
-        assertEquals(3, productionTree.logEntries.size)
-        assertEquals(1, errorOnlyTree.logEntries.size)
+        assertEquals(0, debugTree.logEntries().size)
+        assertEquals(3, productionTree.logEntries().size)
+        assertEquals(1, errorOnlyTree.logEntries().size)
     }
 
     @Test
-    fun testFilteringWithMultipleTrees() {
+    fun testFilteringWithMultipleTrees() = runTest {
         debugTree.setLoggable(false)
 
         Cedar.plant(debugTree, productionTree, errorOnlyTree)
@@ -114,13 +114,13 @@ class CedarIntegrationTest {
         Cedar.w("Warning")
         Cedar.e("Error")
 
-        assertEquals(0, debugTree.logEntries.size)
-        assertEquals(3, productionTree.logEntries.size)
-        assertEquals(1, errorOnlyTree.logEntries.size)
+        assertEquals(0, debugTree.logEntries().size)
+        assertEquals(3, productionTree.logEntries().size)
+        assertEquals(1, errorOnlyTree.logEntries().size)
     }
 
     @Test
-    fun testMultipleLoggersWithDifferentTags() {
+    fun testMultipleLoggersWithDifferentTags() = runTest {
         Cedar.plant(debugTree)
 
         val networkLogger = Cedar.tag("Network")
@@ -131,9 +131,9 @@ class CedarIntegrationTest {
         dbLogger.d("Executing query")
         uiLogger.w("Deprecated method used")
 
-        assertEquals(3, debugTree.logEntries.size)
+        assertEquals(3, debugTree.logEntries().size)
 
-        val tags = debugTree.logEntries.map { it.tag }
+        val tags = debugTree.logEntries().map { it.tag }
         assertEquals(listOf("Network", "Database", "UI"), tags)
 
         val networkEntries = debugTree.getEntriesWithTag("Network")
@@ -142,7 +142,7 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testExceptionLogging() {
+    fun testExceptionLogging() = runTest {
         Cedar.plant(debugTree, productionTree, errorOnlyTree)
 
         val networkException = RuntimeException("Network timeout")
@@ -167,7 +167,7 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testLogScopingWithMultipleTrees() = runBlocking {
+    fun testLogScopingWithMultipleTrees() = runTest {
         Cedar.plant(debugTree, productionTree)
 
         val logger = Cedar.tag("ScopeTest")
@@ -178,23 +178,23 @@ class CedarIntegrationTest {
             logger.i("Authentication successful")
         }
 
-        assertEquals(4, debugTree.logEntries.size)
-        assertEquals(3, productionTree.logEntries.size)
+        assertEquals(4, debugTree.logEntries().size)
+        assertEquals(3, productionTree.logEntries().size)
 
-        val debugMessages = debugTree.logEntries.map { it.message }
+        val debugMessages = debugTree.logEntries().map { it.message }
         assertTrue(debugMessages[0].contains("⟹ User authentication"))
         assertEquals("Validating credentials", debugMessages[1])
         assertEquals("Authentication successful", debugMessages[2])
         assertTrue(debugMessages[3].contains("⟸ User authentication"))
 
-        val productionMessages = productionTree.logEntries.map { it.message }
+        val productionMessages = productionTree.logEntries().map { it.message }
         assertTrue(productionMessages[0].contains("⟹ User authentication"))
         assertEquals("Authentication successful", productionMessages[1])
         assertTrue(productionMessages[2].contains("⟸ User authentication"))
     }
 
     @Test
-    fun testNestedLogScopes() = runBlocking {
+    fun testNestedLogScopes() = runTest {
         Cedar.plant(debugTree)
 
         val logger = Cedar.tag("NestedScope")
@@ -212,9 +212,9 @@ class CedarIntegrationTest {
             logger.d("Outer step 2")
         }
 
-        assertEquals(8, debugTree.logEntries.size)
+        assertEquals(8, debugTree.logEntries().size)
 
-        val messages = debugTree.logEntries.map { it.message }
+        val messages = debugTree.logEntries().map { it.message }
         assertTrue(messages[0].contains("⟹ Outer operation"))
         assertEquals("Outer step 1", messages[1])
         assertTrue(messages[2].contains("⟹ Inner operation"))
@@ -226,7 +226,7 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testStaticLoggingWithMultipleTrees() {
+    fun testStaticLoggingWithMultipleTrees() = runTest {
         Cedar.plant(debugTree, productionTree, errorOnlyTree)
 
         Cedar.v("Static verbose")
@@ -235,17 +235,17 @@ class CedarIntegrationTest {
         Cedar.w("Static warning")
         Cedar.e("Static error")
 
-        assertEquals(5, debugTree.logEntries.size)
-        assertEquals(3, productionTree.logEntries.size)
-        assertEquals(1, errorOnlyTree.logEntries.size)
+        assertEquals(5, debugTree.logEntries().size)
+        assertEquals(3, productionTree.logEntries().size)
+        assertEquals(1, errorOnlyTree.logEntries().size)
 
-        debugTree.logEntries.forEach { entry ->
+        debugTree.logEntries().forEach { entry ->
             assertEquals("AppLogger", entry.tag)
         }
     }
 
     @Test
-    fun testRealWorldScenario() = runBlocking {
+    fun testRealWorldScenario() = runTest {
         val developmentTree = MockLogTree()
         developmentTree.setMinPriority(LogPriority.VERBOSE)
 
@@ -280,15 +280,15 @@ class CedarIntegrationTest {
             }
         }
 
-        assertTrue(developmentTree.logEntries.size >= 8)
-        assertTrue(analyticsTree.logEntries.isEmpty())
+        assertTrue(developmentTree.logEntries().size >= 8)
+        assertTrue(analyticsTree.logEntries().isEmpty())
 
         authLogger.w("Token expiring soon")
         apiLogger.e("Rate limit exceeded")
 
-        assertEquals(2, analyticsTree.logEntries.size)
-        assertEquals(LogPriority.WARNING, analyticsTree.logEntries[0].priority)
-        assertEquals(LogPriority.ERROR, analyticsTree.logEntries[1].priority)
+        assertEquals(2, analyticsTree.logEntries().size)
+        assertEquals(LogPriority.WARNING, analyticsTree.logEntries()[0].priority)
+        assertEquals(LogPriority.ERROR, analyticsTree.logEntries()[1].priority)
 
         val apiEntries = developmentTree.getEntriesWithTag("ApiClient")
         assertTrue(apiEntries.isNotEmpty())
@@ -298,36 +298,36 @@ class CedarIntegrationTest {
     }
 
     @Test
-    fun testTreeSetupTeardownInWorkflow() {
+    fun testTreeSetupTeardownInWorkflow() = runTest {
         Cedar.plant(debugTree, productionTree)
 
         assertTrue(debugTree.isSetup)
         assertTrue(productionTree.isSetup)
 
         Cedar.i("Test message")
-        assertEquals(1, debugTree.logEntries.size)
-        assertEquals(1, productionTree.logEntries.size)
+        assertEquals(1, debugTree.logEntries().size)
+        assertEquals(1, productionTree.logEntries().size)
 
         Cedar.uproot(debugTree)
 
         assertFalse(debugTree.isSetup)
         assertTrue(productionTree.isSetup)
-        assertTrue(debugTree.logEntries.isEmpty())
+        assertTrue(debugTree.logEntries().isEmpty())
 
         Cedar.i("Another message")
-        assertEquals(0, debugTree.logEntries.size)
-        assertEquals(2, productionTree.logEntries.size)
+        assertEquals(0, debugTree.logEntries().size)
+        assertEquals(2, productionTree.logEntries().size)
 
         Cedar.clearForest()
 
         assertFalse(debugTree.isSetup)
         assertFalse(productionTree.isSetup)
-        assertTrue(debugTree.logEntries.isEmpty())
-        assertTrue(productionTree.logEntries.isEmpty())
+        assertTrue(debugTree.logEntries().isEmpty())
+        assertTrue(productionTree.logEntries().isEmpty())
     }
 
     @Test
-    fun testErrorHandlingInComplexScenario() {
+    fun testErrorHandlingInComplexScenario() = runTest {
         val tolerantTree = MockLogTree()
         val strictTree = object : MockLogTree() {
             override fun log(
@@ -347,57 +347,60 @@ class CedarIntegrationTest {
 
         try {
             Cedar.tag("ALLOWED").i("This should work")
-            assertEquals(1, tolerantTree.logEntries.size)
-            assertEquals(1, strictTree.logEntries.size)
+            assertEquals(1, tolerantTree.logEntries().size)
+            assertEquals(1, strictTree.logEntries().size)
 
             Cedar.tag("FORBIDDEN").e("This should cause an error in strict tree")
         } catch (e: RuntimeException) {
         }
 
-        assertEquals(2, tolerantTree.logEntries.size)
+        assertEquals(2, tolerantTree.logEntries().size)
     }
 
     @Test
-    fun testPerformanceWithManyTrees() {
-        val trees = List(20) { MockLogTree() }
-        Cedar.plant(*trees.toTypedArray())
+    fun testPerformanceWithManyTrees() =
+        runTest {
+            val trees = List(20) { MockLogTree() }
+            Cedar.plant(*trees.toTypedArray())
 
-        val logger = Cedar.tag("PerformanceTest")
+            val logger = Cedar.tag("PerformanceTest")
 
-        repeat(100) { index ->
-            logger.i("Message $index")
-        }
-
-        trees.forEach { tree ->
-            assertEquals(100, tree.logEntries.size)
-        }
-
-        assertEquals(20, Cedar.treeCount)
-    }
-
-    @Test
-    fun testComplexFilteringScenario() {
-        val debugOnlyTree = MockLogTree()
-        debugOnlyTree.setMinPriority(LogPriority.DEBUG)
-        debugOnlyTree.setLoggable(true)
-
-        val conditionalTree = object : MockLogTree() {
-            override fun isLoggable(tag: String?, priority: LogPriority): Boolean {
-                return tag?.startsWith("App") == true && priority >= LogPriority.INFO
+            repeat(100) { index ->
+                logger.i("Message $index")
             }
+
+            trees.forEach { tree ->
+                assertEquals(100, tree.logEntries().size)
+            }
+
+            assertEquals(20, Cedar.treeCount)
         }
 
-        Cedar.plant(debugOnlyTree, conditionalTree)
+    @Test
+    fun testComplexFilteringScenario() =
+        runTest {
 
-        Cedar.tag("AppService").v("Verbose")
-        Cedar.tag("AppService").d("Debug")
-        Cedar.tag("AppService").i("Info")
-        Cedar.tag("NetworkService").i("Info")
-        Cedar.tag("DatabaseService").w("Warning")
+            val debugOnlyTree = MockLogTree()
+            debugOnlyTree.setMinPriority(LogPriority.DEBUG)
+            debugOnlyTree.setLoggable(true)
 
-        assertEquals(4, debugOnlyTree.logEntries.size)
-        assertEquals(1, conditionalTree.logEntries.size)
-        assertEquals("AppService", conditionalTree.logEntries.first().tag)
-        assertEquals(LogPriority.INFO, conditionalTree.logEntries.first().priority)
-    }
+            val conditionalTree = object : MockLogTree() {
+                override fun isLoggable(tag: String?, priority: LogPriority): Boolean {
+                    return tag?.startsWith("App") == true && priority >= LogPriority.INFO
+                }
+            }
+
+            Cedar.plant(debugOnlyTree, conditionalTree)
+
+            Cedar.tag("AppService").v("Verbose")
+            Cedar.tag("AppService").d("Debug")
+            Cedar.tag("AppService").i("Info")
+            Cedar.tag("NetworkService").i("Info")
+            Cedar.tag("DatabaseService").w("Warning")
+
+            assertEquals(4, debugOnlyTree.logEntries().size)
+            assertEquals(1, conditionalTree.logEntries().size)
+            assertEquals("AppService", conditionalTree.logEntries().first().tag)
+            assertEquals(LogPriority.INFO, conditionalTree.logEntries().first().priority)
+        }
 } 

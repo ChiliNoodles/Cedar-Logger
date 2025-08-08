@@ -1,4 +1,4 @@
-package sample.app
+package io.github.chilinoodles.sample
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

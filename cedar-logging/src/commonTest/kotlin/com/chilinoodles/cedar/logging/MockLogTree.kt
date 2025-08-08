@@ -1,9 +1,5 @@
 package com.chilinoodles.cedar.logging
 
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-
 data class LogEntry(
     val priority: LogPriority,
     val tag: String,
@@ -13,10 +9,8 @@ data class LogEntry(
 
 open class MockLogTree : LogTree {
     private val _logEntries = mutableListOf<LogEntry>()
-    private val mutex = Mutex()
 
-    val logEntries: List<LogEntry>
-        get() = runBlocking { mutex.withLock { _logEntries.toList() } }
+    suspend fun logEntries(): List<LogEntry> = _logEntries.toList()
 
     private var _isSetup = false
     private var _isLoggable = true
@@ -39,7 +33,7 @@ open class MockLogTree : LogTree {
 
     override fun tearDown() {
         _isSetup = false
-        runBlocking { mutex.withLock { _logEntries.clear() } }
+        _logEntries.clear()
     }
 
     override fun isLoggable(tag: String?, priority: LogPriority): Boolean {
@@ -48,27 +42,23 @@ open class MockLogTree : LogTree {
 
     override fun log(priority: LogPriority, tag: String, message: String, throwable: Throwable?) {
         if (isLoggable(tag, priority)) {
-            runBlocking {
-                mutex.withLock {
-                    _logEntries.add(LogEntry(priority, tag, message, throwable))
-                }
-            }
+            _logEntries.add(LogEntry(priority, tag, message, throwable))
         }
     }
 
-    fun clear() {
-        runBlocking { mutex.withLock { _logEntries.clear() } }
+    suspend fun clear() {
+        _logEntries.clear()
     }
 
-    fun getEntriesWithTag(tag: String): List<LogEntry> {
-        return runBlocking { mutex.withLock { _logEntries.filter { it.tag == tag } } }
+    suspend fun getEntriesWithTag(tag: String): List<LogEntry> {
+        return _logEntries.filter { it.tag == tag }
     }
 
-    fun getEntriesWithPriority(priority: LogPriority): List<LogEntry> {
-        return runBlocking { mutex.withLock { _logEntries.filter { it.priority == priority } } }
+    suspend fun getEntriesWithPriority(priority: LogPriority): List<LogEntry> {
+        return _logEntries.filter { it.priority == priority }
     }
 
-    fun getEntriesWithThrowable(): List<LogEntry> {
-        return runBlocking { mutex.withLock { _logEntries.filter { it.throwable != null } } }
+    suspend fun getEntriesWithThrowable(): List<LogEntry> {
+        return _logEntries.filter { it.throwable != null }
     }
 } 

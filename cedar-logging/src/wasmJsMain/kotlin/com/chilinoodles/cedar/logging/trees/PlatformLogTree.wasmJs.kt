@@ -1,32 +1,29 @@
 package com.chilinoodles.cedar.logging.trees
 
-import android.util.Log
 import com.chilinoodles.cedar.logging.LogPriority
 import com.chilinoodles.cedar.logging.LogTree
 
-actual class PlatformLogTree : LogTree {
+/** External JS console object for Kotlin/Wasm interop */
+@JsModule("console")
+external object Console {
+    fun debug(vararg args: String)
+    fun log(vararg args: String)
+    fun info(vararg args: String)
+    fun warn(vararg args: String)
+    fun error(vararg args: String)
+}
 
-    private var maxLogLength = 4_000
+/** Wasm-JS implementation of the logging tree */
+actual class PlatformLogTree actual constructor() : LogTree {
     private var enableEmojis: Boolean = true
 
     actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
         val configuration = PlatformLogConfig().apply(config)
         
-        configuration.androidMaxLogLength?.let { maxLogLength = it }
+        // Apply common configuration (WASM-JS only supports common options)
         enableEmojis = configuration.enableEmojis
         
         return this
-    }
-
-    private fun String.logChunks(prio: Int, tag: String) =
-        chunked(maxLogLength).forEach { Log.println(prio, tag, it) }
-
-    private fun LogPriority.toAndroid(): Int = when (this) {
-        LogPriority.VERBOSE -> Log.VERBOSE
-        LogPriority.DEBUG -> Log.DEBUG
-        LogPriority.INFO -> Log.INFO
-        LogPriority.WARNING -> Log.WARN
-        LogPriority.ERROR -> Log.ERROR
     }
 
     actual override fun isLoggable(tag: String?, priority: LogPriority) = true
@@ -37,10 +34,6 @@ actual class PlatformLogTree : LogTree {
         message: String,
         throwable: Throwable?
     ) {
-        val prio = priority.toAndroid()
-        val actualTag = tag
-        val safeTag = actualTag.take(23)
-
         val symbol = if (enableEmojis) {
             when (priority) {
                 LogPriority.VERBOSE -> "🔍"
@@ -59,14 +52,20 @@ actual class PlatformLogTree : LogTree {
             }
         }
 
-        val full = buildString {
-            append("$symbol $message")
-            throwable?.let {
-                appendLine()
-                append(Log.getStackTraceString(it))
-            }
-        }
+        val header = "[$symbol $tag]"
+        val errorDump = throwable?.stackTraceToString()
+        val fullMessage = buildList {
+            add(header)
+            add(message)
+            errorDump?.let { add(it) }
+        }.toTypedArray()
 
-        full.logChunks(prio, safeTag)
+        when (priority) {
+            LogPriority.VERBOSE,
+            LogPriority.DEBUG -> Console.debug(*fullMessage)
+            LogPriority.INFO -> Console.info(*fullMessage)
+            LogPriority.WARNING -> Console.warn(*fullMessage)
+            LogPriority.ERROR -> Console.error(*fullMessage)
+        }
     }
 }
