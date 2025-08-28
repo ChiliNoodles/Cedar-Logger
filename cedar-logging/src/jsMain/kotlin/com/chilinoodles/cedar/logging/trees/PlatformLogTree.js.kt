@@ -17,9 +17,9 @@ actual class PlatformLogTree actual constructor() : LogTree {
 
     actual fun configureForPlatform(config: PlatformLogConfig.() -> Unit): PlatformLogTree {
         val configuration = PlatformLogConfig().apply(config)
-        
+
         enableEmojis = configuration.enableEmojis
-        
+
         return this
     }
 
