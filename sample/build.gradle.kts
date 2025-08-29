@@ -10,6 +10,9 @@ plugins {
 }
 
 kotlin {
+    val rootDirPath = project.rootDir.path
+    val projectDirPath = project.projectDir.path
+
     jvmToolchain(libs.versions.javaVersion.get().toInt())
 
     androidTarget()
@@ -27,17 +30,30 @@ kotlin {
 
     jvm()
 
+    js(IR) {
+        outputModuleName.set("composeApp-js")
+        browser {
+            commonWebpackConfig {
+                outputFileName = "composeApp-js.js"
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    static = (static ?: mutableListOf()).apply {
+                        add(rootDirPath)
+                        add(projectDirPath)
+                    }
+                }
+            }
+        }
+        binaries.executable()
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         outputModuleName.set("composeApp")
         browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
             commonWebpackConfig {
                 outputFileName = "composeApp.js"
                 devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
                     static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
                         add(rootDirPath)
                         add(projectDirPath)
                     }

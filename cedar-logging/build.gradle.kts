@@ -41,6 +41,11 @@ kotlin {
         binaries.executable()
     }
 
+    js(IR) {
+        browser()
+        binaries.executable()
+    }
+
     sourceSets {
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
