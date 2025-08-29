@@ -86,6 +86,7 @@ android {
 //https://www.jetbrains.com/help/kotlin-multiplatform-dev/multiplatform-publish-libraries.html
 mavenPublishing {
     publishToMavenCentral()
+    signAllPublications()
     coordinates("io.github.chilinoodles", "cedar-logging", libs.versions.appVersionName.get())
 
     pom {
@@ -119,5 +120,4 @@ mavenPublishing {
             url = "https://github.com/ChiliNoodles/Cedar-Logger"
         }
     }
-    if (project.hasProperty("signing.keyId")) signAllPublications()
 }
