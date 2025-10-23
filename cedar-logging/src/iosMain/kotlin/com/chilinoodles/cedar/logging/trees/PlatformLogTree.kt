@@ -89,7 +89,7 @@ actual class PlatformLogTree : LogTree {
                     __dso_handle.ptr,
                     logObject,
                     mapToOsLogType(priority),
-                    "%s",
+                    "%{public}s",
                     chunk
                 )
             }
